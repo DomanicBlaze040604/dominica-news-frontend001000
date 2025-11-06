@@ -12,25 +12,37 @@ import { runCrossBrowserTests, generateCompatibilityReport } from "./utils/cross
 import { generateAccessibilityReport } from "./utils/accessibilityTesting";
 
 // Performance optimizations
-preloadCriticalFonts();
-optimizeResourceLoading();
+try {
+  preloadCriticalFonts();
+  optimizeResourceLoading();
+} catch (error) {
+  console.warn('Performance optimization failed:', error);
+}
 
 // Development performance monitoring
-if (import.meta.env.MODE === 'development') {
-  setupCoreWebVitalsMonitoring();
-  
-  // Run cross-browser tests immediately
-  runCrossBrowserTests();
-  
-  // Generate reports after app loads
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      generateBundleReport();
-      performanceMonitor.generateReport();
-      generateCompatibilityReport();
-      generateAccessibilityReport();
-    }, 3000);
-  });
+if (import.meta.env.DEV) {
+  try {
+    setupCoreWebVitalsMonitoring();
+    
+    // Run cross-browser tests immediately
+    runCrossBrowserTests();
+    
+    // Generate reports after app loads
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        try {
+          generateBundleReport();
+          performanceMonitor.generateReport();
+          generateCompatibilityReport();
+          generateAccessibilityReport();
+        } catch (error) {
+          console.warn('Performance reporting failed:', error);
+        }
+      }, 3000);
+    });
+  } catch (error) {
+    console.warn('Performance monitoring setup failed:', error);
+  }
 }
 
 createRoot(document.getElementById("root")!).render(<App />);
