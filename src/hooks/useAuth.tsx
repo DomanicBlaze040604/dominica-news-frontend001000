@@ -1,226 +1,109 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { authService, tokenService, userService, User, LoginCredentials, RegisterData } from '../services/auth';
-import { toast } from 'sonner';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+interface User {
+  id: string;
+  email: string;
+  fullName: string;
+  role: string;
+}
 
 interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  isAdmin: boolean;
-  isEditor: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  register: (userData: RegisterData) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  logoutAll: () => Promise<void>;
-  changePassword: (data: { currentPassword: string; newPassword: string }) => Promise<void>;
-  updateProfile: (data: { fullName: string }) => Promise<void>;
-  refetchUser: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const queryClient = useQueryClient();
+  const [loading, setLoading] = useState(true);
 
-  // Query to get current user
-  const {
-    data: userData,
-    isLoading: isUserLoading,
-    refetch: refetchUser,
-  } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: authService.getCurrentUser,
-    enabled: !!tokenService.getToken() && tokenService.isTokenValid(),
-    retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  // Login mutation
-  const loginMutation = useMutation({
-    mutationFn: authService.login,
-    onSuccess: (data) => {
-      const { user, token } = data.data;
-      tokenService.setToken(token);
-      userService.setUser(user);
-      setUser(user);
-      queryClient.setQueryData(['currentUser'], { data: { user } });
-      toast.success('Login successful!');
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.error || error.response?.data?.message || 'Login failed. Please try again.';
-      toast.error(message);
-    },
-  });
-
-  // Register mutation
-  const registerMutation = useMutation({
-    mutationFn: authService.register,
-    onSuccess: (data) => {
-      const { user, token } = data.data;
-      tokenService.setToken(token);
-      userService.setUser(user);
-      setUser(user);
-      queryClient.setQueryData(['currentUser'], { data: { user } });
-      toast.success('Registration successful!');
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.error || 'Registration failed. Please try again.';
-      toast.error(message);
-    },
-  });
-
-  // Logout mutation
-  const logoutMutation = useMutation({
-    mutationFn: authService.logout,
-    onSuccess: () => {
-      tokenService.removeToken();
-      userService.removeUser();
-      setUser(null);
-      queryClient.clear();
-      toast.success('Logged out successfully');
-    },
-    onError: () => {
-      // Even if logout fails on server, clear local data
-      tokenService.removeToken();
-      userService.removeUser();
-      setUser(null);
-      queryClient.clear();
-      toast.success('Logged out successfully');
-    },
-  });
-
-  // Logout all devices mutation
-  const logoutAllMutation = useMutation({
-    mutationFn: authService.logoutAll,
-    onSuccess: () => {
-      tokenService.removeToken();
-      userService.removeUser();
-      setUser(null);
-      queryClient.clear();
-      toast.success('Logged out from all devices successfully');
-    },
-    onError: () => {
-      // Even if logout fails on server, clear local data
-      tokenService.removeToken();
-      userService.removeUser();
-      setUser(null);
-      queryClient.clear();
-      toast.success('Logged out from all devices successfully');
-    },
-  });
-
-  // Change password mutation
-  const changePasswordMutation = useMutation({
-    mutationFn: authService.changePassword,
-    onSuccess: () => {
-      // Clear tokens to force re-login
-      tokenService.removeToken();
-      userService.removeUser();
-      setUser(null);
-      queryClient.clear();
-      toast.success('Password changed successfully. Please log in again.');
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.error || error.response?.data?.message || 'Failed to change password';
-      toast.error(message);
-    },
-  });
-
-  // Update profile mutation
-  const updateProfileMutation = useMutation({
-    mutationFn: authService.updateProfile,
-    onSuccess: (data) => {
-      const updatedUser = data.data.user;
-      userService.setUser(updatedUser);
-      setUser(updatedUser);
-      queryClient.setQueryData(['currentUser'], { data: { user: updatedUser } });
-      toast.success('Profile updated successfully');
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.error || error.response?.data?.message || 'Failed to update profile';
-      toast.error(message);
-    },
-  });
-
-  // Initialize auth state
   useEffect(() => {
-    const initializeAuth = () => {
-      const token = tokenService.getToken();
-      const savedUser = userService.getUser();
-
-      if (token && tokenService.isTokenValid() && savedUser) {
-        setUser(savedUser);
-      } else {
-        // Clear invalid token/user data
-        tokenService.removeToken();
-        userService.removeUser();
-        setUser(null);
+    // Check for existing session
+    const token = localStorage.getItem('auth_token');
+    const userData = localStorage.getItem('user_data');
+    
+    if (token && userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (error) {
+        console.error('Failed to parse user data:', error);
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
       }
-
-      setIsInitialized(true);
-    };
-
-    initializeAuth();
+    }
+    
+    setLoading(false);
   }, []);
 
-  // Update user when query data changes
-  useEffect(() => {
-    if (userData?.data?.user) {
-      setUser(userData.data.user);
-      userService.setUser(userData.data.user);
+  const login = async (email: string, password: string) => {
+    setLoading(true);
+    try {
+      // TODO: Replace with actual API call to your backend
+      console.log('Login attempt:', { email, password });
+      
+      // Mock successful login for now
+      const mockUser: User = {
+        id: '1',
+        email,
+        fullName: 'Admin User',
+        role: 'admin'
+      };
+      
+      const mockToken = 'mock_token_' + Date.now();
+      
+      localStorage.setItem('auth_token', mockToken);
+      localStorage.setItem('user_data', JSON.stringify(mockUser));
+      setUser(mockUser);
+      
+      // In real implementation, make API call here:
+      // const response = await authService.login({ email, password });
+      // localStorage.setItem('auth_token', response.data.token);
+      // localStorage.setItem('user_data', JSON.stringify(response.data.user));
+      // setUser(response.data.user);
+      
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
-  }, [userData]);
-
-  const login = async (credentials: LoginCredentials): Promise<void> => {
-    await loginMutation.mutateAsync(credentials);
   };
 
-  const register = async (userData: RegisterData): Promise<void> => {
-    await registerMutation.mutateAsync(userData);
+  const logout = async () => {
+    setLoading(true);
+    try {
+      // TODO: Replace with actual API call to your backend
+      // await authService.logout();
+      
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_data');
+      setUser(null);
+    } catch (error) {
+      console.error('Logout failed:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const logout = async (): Promise<void> => {
-    await logoutMutation.mutateAsync();
-  };
-
-  const logoutAll = async (): Promise<void> => {
-    await logoutAllMutation.mutateAsync();
-  };
-
-  const changePassword = async (data: { currentPassword: string; newPassword: string }): Promise<void> => {
-    await changePasswordMutation.mutateAsync(data);
-  };
-
-  const updateProfile = async (data: { fullName: string }): Promise<void> => {
-    await updateProfileMutation.mutateAsync(data);
-  };
-
-  const value: AuthContextType = {
+  const value = {
     user,
-    isAuthenticated: !!user,
-    isLoading: !isInitialized || isUserLoading || loginMutation.isPending || registerMutation.isPending,
-    isAdmin: user?.role === 'admin',
-    isEditor: user?.role === 'admin' || user?.role === 'editor',
     login,
-    register,
     logout,
-    logoutAll,
-    changePassword,
-    updateProfile,
-    refetchUser,
+    loading
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');

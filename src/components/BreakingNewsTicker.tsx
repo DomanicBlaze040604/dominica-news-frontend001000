@@ -1,138 +1,71 @@
 import React, { useState, useEffect } from 'react';
-import { X, AlertTriangle } from 'lucide-react';
-import { breakingNewsService } from '../services/breakingNews';
-import { BreakingNews } from '../types/api';
+import { X, AlertCircle } from 'lucide-react';
 
-interface BreakingNewsTickerProps {
-  className?: string;
+interface BreakingNews {
+  id: string;
+  title: string;
+  url?: string;
 }
 
-export const BreakingNewsTicker: React.FC<BreakingNewsTickerProps> = ({ className = '' }) => {
-  const [breakingNews, setBreakingNews] = useState<BreakingNews | null>(null);
-  const [isDismissed, setIsDismissed] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const BreakingNewsTicker: React.FC = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [currentNews, setCurrentNews] = useState<BreakingNews | null>(null);
 
+  // Mock breaking news - replace with actual API call
   useEffect(() => {
-    fetchBreakingNews();
-    
-    // Set up auto-refresh every 30 seconds
-    const interval = setInterval(fetchBreakingNews, 30000);
-    
-    return () => clearInterval(interval);
+    // TODO: Replace with actual API call to your backend
+    const mockBreakingNews: BreakingNews = {
+      id: '1',
+      title: 'Welcome to Dominica News - Your trusted source for Caribbean updates',
+      url: '/'
+    };
+
+    // Only show if there's actual breaking news
+    // setCurrentNews(mockBreakingNews);
+    // setIsVisible(true);
   }, []);
 
-  const fetchBreakingNews = async () => {
-    try {
-      setError(null);
-      const news = await breakingNewsService.getActive();
-      setBreakingNews(news);
-      
-      // Reset dismissed state if there's new breaking news
-      if (news && (!breakingNews || news.id !== breakingNews.id)) {
-        setIsDismissed(false);
-      }
-    } catch (error) {
-      console.error('Failed to fetch breaking news:', error);
-      setError('Failed to load breaking news');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDismiss = () => {
-    setIsDismissed(true);
-    // Store dismissed state in localStorage to persist across page reloads
-    if (breakingNews) {
-      localStorage.setItem(`breaking-news-dismissed-${breakingNews.id}`, 'true');
-    }
-  };
-
-  // Check if this breaking news was previously dismissed
-  useEffect(() => {
-    if (breakingNews) {
-      const wasDismissed = localStorage.getItem(`breaking-news-dismissed-${breakingNews.id}`);
-      if (wasDismissed === 'true') {
-        setIsDismissed(true);
-      }
-    }
-  }, [breakingNews]);
-
-  // Don't render if loading, no breaking news, dismissed, or error
-  if (isLoading || !breakingNews || isDismissed || error) {
+  if (!isVisible || !currentNews) {
     return null;
   }
 
   return (
-    <div className={`breaking-news-ticker ${className}`}>
-      <div className="breaking-news-container bg-red-600 text-white py-2 px-4 flex items-center justify-between shadow-lg">
-        <div className="flex items-center space-x-3 flex-1 min-w-0">
-          <div className="breaking-news-label flex items-center space-x-2 flex-shrink-0">
-            <AlertTriangle className="h-5 w-5 text-yellow-300 animate-pulse" />
-            <span className="breaking-text font-bold text-sm bg-yellow-300 text-red-600 px-2 py-1 rounded uppercase tracking-wide">
-              BREAKING
-            </span>
-          </div>
-          <div className="breaking-news-content flex-1 min-w-0">
-            <div className="breaking-news-text text-sm md:text-base font-medium animate-scroll">
-              {breakingNews.text}
+    <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between py-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <AlertCircle className="h-5 w-5 animate-pulse" />
+              <span className="font-bold text-sm uppercase tracking-wide">
+                Breaking News
+              </span>
+            </div>
+            
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <div className="animate-marquee whitespace-nowrap">
+                {currentNews.url ? (
+                  <a 
+                    href={currentNews.url}
+                    className="hover:underline font-medium"
+                  >
+                    {currentNews.title}
+                  </a>
+                ) : (
+                  <span className="font-medium">{currentNews.title}</span>
+                )}
+              </div>
             </div>
           </div>
+          
+          <button
+            onClick={() => setIsVisible(false)}
+            className="flex-shrink-0 p-1 hover:bg-red-800 rounded transition-colors ml-4"
+            aria-label="Close breaking news"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
-        <button
-          onClick={handleDismiss}
-          className="breaking-news-dismiss ml-3 p-1 hover:bg-red-700 rounded-full transition-colors duration-200 flex-shrink-0"
-          aria-label="Dismiss breaking news"
-          title="Dismiss breaking news"
-        >
-          <X size={18} />
-        </button>
       </div>
-      
-      <style jsx>{`
-        .breaking-news-ticker {
-          position: relative;
-          z-index: 50;
-        }
-        
-        .breaking-news-container {
-          animation: slideDown 0.5s ease-out;
-        }
-        
-        @keyframes slideDown {
-          from {
-            transform: translateY(-100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        
-        .animate-scroll {
-          animation: scroll 20s linear infinite;
-          white-space: nowrap;
-          overflow: hidden;
-        }
-        
-        @keyframes scroll {
-          0% {
-            transform: translateX(100%);
-          }
-          100% {
-            transform: translateX(-100%);
-          }
-        }
-        
-        @media (max-width: 768px) {
-          .animate-scroll {
-            animation: none;
-            white-space: normal;
-            overflow: visible;
-          }
-        }
-      `}</style>
     </div>
   );
 };

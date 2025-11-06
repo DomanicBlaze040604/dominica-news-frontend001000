@@ -1,38 +1,14 @@
-# Robots.txt for Dominica News
-# Following news industry best practices
-
-User-agent: *
-Allow: /
-
-# Allow all major search engines
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
 Allow: /
 
-User-agent: Slurp
+User-agent: Twitterbot
 Allow: /
 
-User-agent: DuckDuckBot
+User-agent: facebookexternalhit
 Allow: /
 
-# Google News specific
-User-agent: Googlebot-News
+User-agent: *
 Allow: /
-
-# Disallow admin and private areas
-Disallow: /admin/
-Disallow: /api/
-Disallow: /auth/
-Disallow: /private/
-
-# Allow important SEO files
-Allow: /sitemap.xml
-Allow: /robots.txt
-
-# Sitemap location
-Sitemap: https://dominicanews.com/sitemap.xml
-
-# Crawl delay (be respectful)
-Crawl-delay: 1

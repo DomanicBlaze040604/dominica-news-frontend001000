@@ -1,290 +1,143 @@
-import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
-import { Footer } from '../components/layout/Footer';
-import { Header } from '../components/layout/Header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Mail, Phone, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
-import { useSiteSetting } from '../hooks/useSiteSettings';
-import { SocialMediaLinks } from '../components/SocialMediaLinks';
-import { api } from '../services/api';
-import { toast } from 'sonner';
+import React from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Navbar } from '@/components/Navbar';
+import { Mail, Phone, MapPin, Send } from 'lucide-react';
 
-export const ContactPage: React.FC = () => {
-  // Get contact settings
-  const { data: contactEmailData } = useSiteSetting('contact_email');
-  const { data: contactPhoneData } = useSiteSetting('contact_phone');
-  const { data: contactAddressData } = useSiteSetting('contact_address');
-  const { data: workingHoursData } = useSiteSetting('contact_workingHours');
-  const { data: siteNameData } = useSiteSetting('site_name');
-
-  const contactEmail = contactEmailData?.value;
-  const contactPhone = contactPhoneData?.value;
-  const contactAddress = contactAddressData?.value;
-  const workingHours = workingHoursData?.value;
-  const siteName = siteNameData?.value || 'Dominica News';
-
-  // Form state
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const response = await api.post('/settings/contact/submit', formData);
-      
-      if (response.data.success) {
-        setIsSubmitted(true);
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          subject: '',
-          message: ''
-        });
-        toast.success('Message sent successfully! We will get back to you soon.');
-      }
-    } catch (error: any) {
-      console.error('Error submitting contact form:', error);
-      toast.error(error.response?.data?.message || 'Failed to send message. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+const ContactPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header>
+    <>
+      <Helmet>
+        <title>Contact Us - Dominica News</title>
+        <meta name="description" content="Get in touch with Dominica News. Contact us for news tips, feedback, or general inquiries." />
+      </Helmet>
+      
+      <div className="min-h-screen bg-gray-50">
         <Navbar />
-      </Header>
-
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Page Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-headline font-bold text-foreground mb-4">
-              Contact Us
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get in touch with the {siteName} team. We'd love to hear from you and 
-              answer any questions you may have.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Contact Information */}
-            <div className="space-y-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Mail className="h-5 w-5" />
-                    Get in Touch
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {contactEmail && (
-                    <div className="flex items-center gap-4">
-                      <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <Mail className="h-5 w-5 text-primary" />
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Email</h3>
-                        <a 
-                          href={`mailto:${contactEmail}`}
-                          className="text-primary hover:underline"
-                        >
-                          {contactEmail}
-                        </a>
-                      </div>
-                    </div>
-                  )}
-
-                  {contactPhone && (
-                    <div className="flex items-center gap-4">
-                      <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <Phone className="h-5 w-5 text-primary" />
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Phone</h3>
-                        <a 
-                          href={`tel:${contactPhone}`}
-                          className="text-primary hover:underline"
-                        >
-                          {contactPhone}
-                        </a>
-                      </div>
-                    </div>
-                  )}
-
-                  {contactAddress && (
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <MapPin className="h-5 w-5 text-primary" />
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Address</h3>
-                        <p className="text-muted-foreground">{contactAddress}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {workingHours && (
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <Clock className="h-5 w-5 text-primary" />
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Working Hours</h3>
-                        <p className="text-muted-foreground">{workingHours}</p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Social Media */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Follow Us</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Stay connected with us on social media for the latest updates and news.
-                  </p>
-                  <SocialMediaLinks 
-                    size="lg" 
-                    variant="outline" 
-                    showLabels={true}
-                    className="flex-wrap"
-                  />
-                </CardContent>
-              </Card>
+        
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">Contact Us</h1>
+              <p className="text-gray-600">
+                Get in touch with our team for news tips, feedback, or general inquiries
+              </p>
             </div>
 
-            {/* Contact Form */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Send className="h-5 w-5" />
-                  Send us a Message
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isSubmitted ? (
-                  <Alert className="border-green-200 bg-green-50">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-green-800">
-                      Thank you for your message! We have received your inquiry and will get back to you as soon as possible.
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
-                        <Input 
-                          id="firstName" 
-                          name="firstName"
-                          placeholder="John" 
-                          value={formData.firstName}
-                          onChange={handleInputChange}
-                          required 
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
-                        <Input 
-                          id="lastName" 
-                          name="lastName"
-                          placeholder="Doe" 
-                          value={formData.lastName}
-                          onChange={handleInputChange}
-                          required 
-                        />
-                      </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Contact Information */}
+              <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Get in Touch</h2>
+                
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Mail className="h-5 w-5 text-green-600" />
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email" 
-                        name="email"
-                        type="email" 
-                        placeholder="john.doe@example.com" 
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required 
-                      />
+                    <div>
+                      <h3 className="font-medium text-gray-900">Email</h3>
+                      <p className="text-gray-600">contact@dominica-news.com</p>
+                      <p className="text-gray-600">news@dominica-news.com</p>
                     </div>
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="subject">Subject</Label>
-                      <Input 
-                        id="subject" 
-                        name="subject"
-                        placeholder="What is this regarding?" 
-                        value={formData.subject}
-                        onChange={handleInputChange}
-                        required 
-                      />
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Phone className="h-5 w-5 text-blue-600" />
                     </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="message">Message</Label>
-                      <Textarea 
-                        id="message" 
-                        name="message"
-                        placeholder="Tell us more about your inquiry..."
-                        rows={6}
-                        value={formData.message}
-                        onChange={handleInputChange}
-                        required 
-                      />
+                    <div>
+                      <h3 className="font-medium text-gray-900">Phone</h3>
+                      <p className="text-gray-600">+1 (767) 123-4567</p>
                     </div>
+                  </div>
 
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                      <Send className="mr-2 h-4 w-4" />
-                      {isSubmitting ? 'Sending...' : 'Send Message'}
-                    </Button>
-                  </form>
-                )}
-              </CardContent>
-            </Card>
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <MapPin className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900">Address</h3>
+                      <p className="text-gray-600">
+                        Roseau, Dominica<br />
+                        Caribbean
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Form */}
+              <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Send us a Message</h2>
+                
+                <form className="space-y-4">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      placeholder="Your name"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+                      Subject
+                    </label>
+                    <input
+                      type="text"
+                      id="subject"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      placeholder="Message subject"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                      Message
+                    </label>
+                    <textarea
+                      id="message"
+                      rows={4}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      placeholder="Your message..."
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
+                    <Send className="h-4 w-4" />
+                    Send Message
+                  </button>
+                </form>
+
+                <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-700">
+                    Form submission will be enabled once backend is connected.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </main>
-
-      <Footer />
-    </div>
+        </main>
+      </div>
+    </>
   );
 };
 

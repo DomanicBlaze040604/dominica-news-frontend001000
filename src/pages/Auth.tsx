@@ -1,350 +1,215 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "../hooks/useAuth";
-import { Eye, EyeOff } from "lucide-react";
+import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
+import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-// Validation schemas
-const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
-});
-
-const registerSchema = z
-  .object({
-    fullName: z.string().min(2, "Full name must be at least 2 characters"),
-    email: z.string().email("Please enter a valid email address"),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one lowercase letter, one uppercase letter, and one number"
-      ),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
+const Auth: React.FC = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    fullName: '',
+    confirmPassword: ''
   });
 
-type LoginFormData = z.infer<typeof loginSchema>;
-type RegisterFormData = z.infer<typeof registerSchema>;
-
-const Auth = () => {
-  const [activeTab, setActiveTab] = useState("signin");
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const {
-    login,
-    register,
-    isAuthenticated,
-    isLoading: authLoading,
-  } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      const from = location.state?.from?.pathname || "/";
-      navigate(from, { replace: true });
-    }
-  }, [isAuthenticated, navigate, location]);
-
-  // Login form
-  const loginForm = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  // Register form
-  const registerForm = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      fullName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
-
-  const handleLogin = async (data: LoginFormData) => {
-    try {
-      await login({ email: data.email, password: data.password });
-      const from = location.state?.from?.pathname || "/";
-      navigate(from, { replace: true });
-    } catch (error) {
-      // Error is handled by the useAuth hook
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: Implement authentication logic with backend
+    console.log('Auth form submitted:', formData);
   };
 
-  const handleRegister = async (data: RegisterFormData) => {
-    try {
-      await register({
-        fullName: data.fullName,
-        email: data.email,
-        password: data.password,
-      });
-      const from = location.state?.from?.pathname || "/";
-      navigate(from, { replace: true });
-    } catch (error) {
-      // Error is handled by the useAuth hook
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <Link to="/">
-            <h1 className="text-4xl font-bold text-primary mb-2">
-              DOMINICA NEWS
-            </h1>
-          </Link>
-          <p className="text-muted-foreground">Stay informed, stay connected</p>
-        </div>
+    <>
+      <Helmet>
+        <title>{isLogin ? 'Login' : 'Register'} - Dominica News</title>
+        <meta name="description" content={`${isLogin ? 'Login to' : 'Create an account with'} Dominica News to access exclusive content and admin features.`} />
+      </Helmet>
+      
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <Link to="/" className="inline-flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-xl">DN</span>
+              </div>
+              <span className="text-2xl font-bold text-gray-800">
+                Dominica <span className="text-green-600">News</span>
+              </span>
+            </Link>
+          </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="register">Register</TabsTrigger>
-          </TabsList>
+          {/* Auth Form */}
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                {isLogin ? 'Welcome Back' : 'Create Account'}
+              </h1>
+              <p className="text-gray-600">
+                {isLogin 
+                  ? 'Sign in to access your account' 
+                  : 'Join Dominica News community'
+                }
+              </p>
+            </div>
 
-          {/* Sign In Tab */}
-          <TabsContent value="signin">
-            <Card>
-              <CardHeader>
-                <CardTitle>Welcome Back</CardTitle>
-                <CardDescription>
-                  Sign in to access your account
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form
-                  onSubmit={loginForm.handleSubmit(handleLogin)}
-                  className="space-y-4"
-                >
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
-                    <Input
-                      id="signin-email"
-                      type="email"
-                      placeholder="name@example.com"
-                      {...loginForm.register("email")}
-                    />
-                    {loginForm.formState.errors.email && (
-                      <p className="text-sm text-red-500">
-                        {loginForm.formState.errors.email.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="signin-password"
-                        type={showLoginPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        {...loginForm.register("password")}
-                        className="pr-10"
-                      />
-                      <button
-                        type="button"
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                        onClick={() => setShowLoginPassword(!showLoginPassword)}
-                      >
-                        {showLoginPassword ? (
-                          <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                        )}
-                      </button>
-                    </div>
-                    {loginForm.formState.errors.password && (
-                      <p className="text-sm text-red-500">
-                        {loginForm.formState.errors.password.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={authLoading || loginForm.formState.isSubmitting}
-                  >
-                    {authLoading || loginForm.formState.isSubmitting
-                      ? "Signing in..."
-                      : "Sign In"}
-                  </Button>
-                </form>
-
-                {/* Demo Login Button */}
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm text-muted-foreground text-center mb-2">
-                    Try the demo admin panel:
-                  </p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => handleLogin({ email: 'demo@admin.com', password: 'demo123' })}
-                    disabled={authLoading}
-                  >
-                    🔧 Demo Admin Login
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Register Tab */}
-          <TabsContent value="register">
-            <Card>
-              <CardHeader>
-                <CardTitle>Create Account</CardTitle>
-                <CardDescription>Join Dominica News community</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form
-                  onSubmit={registerForm.handleSubmit(handleRegister)}
-                  className="space-y-4"
-                >
-                  <div className="space-y-2">
-                    <Label htmlFor="register-name">Full Name</Label>
-                    <Input
-                      id="register-name"
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {!isLogin && (
+                <div>
+                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
                       type="text"
-                      placeholder="John Doe"
-                      {...registerForm.register("fullName")}
+                      id="fullName"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleInputChange}
+                      className={cn(
+                        "w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg",
+                        "focus:ring-2 focus:ring-green-500 focus:border-transparent",
+                        "transition-all duration-200"
+                      )}
+                      placeholder="Enter your full name"
+                      required={!isLogin}
                     />
-                    {registerForm.formState.errors.fullName && (
-                      <p className="text-sm text-red-500">
-                        {registerForm.formState.errors.fullName.message}
-                      </p>
-                    )}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-email">Email</Label>
-                    <Input
-                      id="register-email"
-                      type="email"
-                      placeholder="name@example.com"
-                      {...registerForm.register("email")}
-                    />
-                    {registerForm.formState.errors.email && (
-                      <p className="text-sm text-red-500">
-                        {registerForm.formState.errors.email.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-password">Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="register-password"
-                        type={showRegisterPassword ? "text" : "password"}
-                        placeholder="Create a strong password"
-                        {...registerForm.register("password")}
-                        className="pr-10"
-                      />
-                      <button
-                        type="button"
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                        onClick={() =>
-                          setShowRegisterPassword(!showRegisterPassword)
-                        }
-                      >
-                        {showRegisterPassword ? (
-                          <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                        )}
-                      </button>
-                    </div>
-                    {registerForm.formState.errors.password && (
-                      <p className="text-sm text-red-500">
-                        {registerForm.formState.errors.password.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="register-confirm">Confirm Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="register-confirm"
-                        type={showConfirmPassword ? "text" : "password"}
-                        placeholder="Re-enter your password"
-                        {...registerForm.register("confirmPassword")}
-                        className="pr-10"
-                      />
-                      <button
-                        type="button"
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
-                      >
-                        {showConfirmPassword ? (
-                          <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                        ) : (
-                          <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-                        )}
-                      </button>
-                    </div>
-                    {registerForm.formState.errors.confirmPassword && (
-                      <p className="text-sm text-red-500">
-                        {registerForm.formState.errors.confirmPassword.message}
-                      </p>
-                    )}
-                  </div>
+                </div>
+              )}
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={
-                      authLoading || registerForm.formState.isSubmitting
-                    }
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className={cn(
+                      "w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg",
+                      "focus:ring-2 focus:ring-green-500 focus:border-transparent",
+                      "transition-all duration-200"
+                    )}
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className={cn(
+                      "w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg",
+                      "focus:ring-2 focus:ring-green-500 focus:border-transparent",
+                      "transition-all duration-200"
+                    )}
+                    placeholder="Enter your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    {authLoading || registerForm.formState.isSubmitting
-                      ? "Creating account..."
-                      : "Create Account"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
 
-        <div className="text-center mt-6">
-          <Link
-            to="/"
-            className="text-sm text-muted-foreground hover:text-primary"
-          >
-            ← Back to Home
-          </Link>
+              {!isLogin && (
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      className={cn(
+                        "w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg",
+                        "focus:ring-2 focus:ring-green-500 focus:border-transparent",
+                        "transition-all duration-200"
+                      )}
+                      placeholder="Confirm your password"
+                      required={!isLogin}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className={cn(
+                  "w-full py-3 px-4 rounded-lg font-medium transition-all duration-200",
+                  "bg-gradient-to-r from-green-500 to-green-600 text-white",
+                  "hover:from-green-600 hover:to-green-700 hover:scale-[1.02]",
+                  "focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2",
+                  "shadow-lg hover:shadow-xl"
+                )}
+              >
+                {isLogin ? 'Sign In' : 'Create Account'}
+              </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-gray-600">
+                {isLogin ? "Don't have an account?" : "Already have an account?"}
+                <button
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="ml-2 text-green-600 hover:text-green-700 font-medium hover:underline"
+                >
+                  {isLogin ? 'Sign Up' : 'Sign In'}
+                </button>
+              </p>
+            </div>
+
+            {isLogin && (
+              <div className="mt-4 text-center">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-gray-500 hover:text-green-600 hover:underline"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 text-center text-sm text-gray-500">
+            <p>Backend integration pending - please provide your API URL</p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

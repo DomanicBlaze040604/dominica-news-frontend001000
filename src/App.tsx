@@ -4,44 +4,50 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import { AuthProvider } from "./hooks/useAuth";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { lazy, Suspense, useEffect } from "react";
-import { ErrorBoundary } from "./components/ErrorBoundary";
-import { BreakingNewsTicker } from "./components/BreakingNewsTicker";
-import { GlobalSEO } from "./components/GlobalSEO";
-import { MaintenanceWrapper } from "./components/MaintenanceWrapper";
-import { initializeApp, setupGracefulShutdown } from "./utils/appInitialization";
-import { FontLoader } from "./components/ui/FontLoader";
-import PerformanceDashboard from "./components/dev/PerformanceDashboard";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { BreakingNewsTicker } from "@/components/BreakingNewsTicker";
+import { GlobalSEO } from "@/components/GlobalSEO";
+import { MaintenanceWrapper } from "@/components/MaintenanceWrapper";
+import { initializeApp, setupGracefulShutdown } from "@/utils/appInitialization";
+import Index from "@/pages/Index";
+import Auth from "@/pages/Auth";
+import NotFound from "@/pages/NotFound";
 
 // Lazy load admin components for better performance
-const AdminLayout = lazy(() => import("./components/admin/AdminLayout").then(m => ({ default: m.AdminLayout })));
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
-const AdminArticles = lazy(() => import("./pages/admin/AdminArticles").then(m => ({ default: m.AdminArticles })));
-const AdminArticleEditor = lazy(() => import("./pages/admin/AdminArticleEditor").then(m => ({ default: m.AdminArticleEditor })));
-const AdminCategories = lazy(() => import("./pages/admin/AdminCategories").then(m => ({ default: m.AdminCategories })));
-const AdminAuthors = lazy(() => import("./pages/admin/AdminAuthors").then(m => ({ default: m.AdminAuthors })));
-const AdminStaticPages = lazy(() => import("./pages/admin/AdminStaticPages").then(m => ({ default: m.AdminStaticPages })));
-const AdminBreakingNews = lazy(() => import("./pages/admin/AdminBreakingNews").then(m => ({ default: m.AdminBreakingNews })));
-const AdminImages = lazy(() => import("./pages/admin/AdminImages").then(m => ({ default: m.AdminImages })));
-const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
-const AdminUsers = lazy(() => import("./pages/admin/AdminUsers").then(m => ({ default: m.AdminUsers })));
-const UserProfile = lazy(() => import("./components/admin/UserProfile").then(m => ({ default: m.UserProfile })));
+const AdminLayout = lazy(() => import("@/components/admin/AdminLayout").then(m => ({ default: m.AdminLayout })));
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
+const AdminArticles = lazy(() => import("@/pages/admin/AdminArticles").then(m => ({ default: m.AdminArticles })));
+const AdminArticleEditor = lazy(() => import("@/pages/admin/AdminArticleEditor").then(m => ({ default: m.AdminArticleEditor })));
+const AdminCategories = lazy(() => import("@/pages/admin/AdminCategories").then(m => ({ default: m.AdminCategories })));
+const AdminAuthors = lazy(() => import("@/pages/admin/AdminAuthors").then(m => ({ default: m.AdminAuthors })));
+const AdminStaticPages = lazy(() => import("@/pages/admin/AdminStaticPages").then(m => ({ default: m.AdminStaticPages })));
+const AdminBreakingNews = lazy(() => import("@/pages/admin/AdminBreakingNews").then(m => ({ default: m.AdminBreakingNews })));
+const AdminImages = lazy(() => import("@/pages/admin/AdminImages").then(m => ({ default: m.AdminImages })));
+const AdminSettings = lazy(() => import("@/pages/admin/AdminSettings"));
+const AdminUsers = lazy(() => import("@/pages/admin/AdminUsers").then(m => ({ default: m.AdminUsers })));
+const UserProfile = lazy(() => import("@/components/admin/UserProfile").then(m => ({ default: m.UserProfile })));
 
 // Lazy load public pages
-const CategoryPage = lazy(() => import("./pages/CategoryPage"));
-const ArticlePage = lazy(() => import("./pages/ArticlePage"));
-const ContactPage = lazy(() => import("./pages/ContactPage"));
-const StaticPageDisplay = lazy(() => import("./pages/StaticPageDisplay"));
+const CategoryPage = lazy(() => import("@/pages/CategoryPage"));
+const ArticlePage = lazy(() => import("@/pages/ArticlePage"));
+const ContactPage = lazy(() => import("@/pages/ContactPage"));
+const StaticPageDisplay = lazy(() => import("@/pages/StaticPageDisplay"));
 
-// Loading component
+// Enhanced Loading component with better UX
 const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
+    <div className="text-center">
+      <div className="relative">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-200 border-t-green-600 mx-auto mb-4"></div>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-green-600 font-bold text-sm">DN</span>
+        </div>
+      </div>
+      <p className="text-gray-600 font-medium">Loading Dominica News...</p>
+    </div>
   </div>
 );
 
@@ -64,8 +70,12 @@ const queryClient = new QueryClient({
 const App = () => {
   // Initialize the application
   useEffect(() => {
-    initializeApp();
-    setupGracefulShutdown();
+    try {
+      initializeApp();
+      setupGracefulShutdown();
+    } catch (error) {
+      console.warn('App initialization failed:', error);
+    }
   }, []);
 
   return (
@@ -74,172 +84,169 @@ const App = () => {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <TooltipProvider>
-              <FontLoader fonts={['Roboto', 'Montserrat']}>
-                <Toaster />
-                <Sonner />
-                <GlobalSEO />
-                <MaintenanceWrapper>
+              <Toaster />
+              <Sonner />
+              <GlobalSEO />
+              <MaintenanceWrapper>
                 <BreakingNewsTicker />
                 <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              
-              {/* Article routes */}
-              <Route path="/articles/:slug" element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  <ArticlePage />
-                </Suspense>
-              } />
-              
-              {/* Dynamic category routes */}
-              <Route path="/category/:category" element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  <CategoryPage />
-                </Suspense>
-              } />
-              
-              {/* Legacy category routes for backward compatibility */}
-              <Route path="/world" element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  <CategoryPage />
-                </Suspense>
-              } />
-              <Route path="/dominica" element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  <CategoryPage />
-                </Suspense>
-              } />
-              <Route path="/economy" element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  <CategoryPage />
-                </Suspense>
-              } />
-              <Route path="/agriculture" element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  <CategoryPage />
-                </Suspense>
-              } />
-              
-              {/* Contact page */}
-              <Route path="/contact" element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  <ContactPage />
-                </Suspense>
-              } />
-              
-              {/* Static pages */}
-              <Route path="/about" element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  <StaticPageDisplay />
-                </Suspense>
-              } />
-              <Route path="/privacy" element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  <StaticPageDisplay />
-                </Suspense>
-              } />
-              <Route path="/terms" element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  <StaticPageDisplay />
-                </Suspense>
-              } />
-              <Route path="/editorial-team" element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  <StaticPageDisplay />
-                </Suspense>
-              } />
-              
-              {/* Dynamic static page route */}
-              <Route path="/pages/:slug" element={
-                <Suspense fallback={<LoadingSpinner />}>
-                  <StaticPageDisplay />
-                </Suspense>
-              } />
-              
-              {/* Admin routes */}
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute requireAdmin>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <AdminLayout />
-                    </Suspense>
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <AdminDashboard />
-                  </Suspense>
-                } />
-                <Route path="articles" element={
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <AdminArticles />
-                  </Suspense>
-                } />
-                <Route path="articles/new" element={
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <AdminArticleEditor />
-                  </Suspense>
-                } />
-                <Route path="articles/:id/edit" element={
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <AdminArticleEditor />
-                  </Suspense>
-                } />
-                <Route path="categories" element={
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <AdminCategories />
-                  </Suspense>
-                } />
-                <Route path="authors" element={
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <AdminAuthors />
-                  </Suspense>
-                } />
-                <Route path="pages" element={
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <AdminStaticPages />
-                  </Suspense>
-                } />
-                <Route path="breaking-news" element={
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <AdminBreakingNews />
-                  </Suspense>
-                } />
-                <Route path="images" element={
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <AdminImages />
-                  </Suspense>
-                } />
-                <Route path="settings" element={
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <AdminSettings />
-                  </Suspense>
-                } />
-                <Route path="users" element={
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <AdminUsers />
-                  </Suspense>
-                } />
-                <Route path="profile" element={
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <UserProfile />
-                  </Suspense>
-                } />
-              </Route>
-              
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-              </BrowserRouter>
-            </MaintenanceWrapper>
-              </FontLoader>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/auth" element={<Auth />} />
+                    
+                    {/* Article routes */}
+                    <Route path="/articles/:slug" element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <ArticlePage />
+                      </Suspense>
+                    } />
+                    
+                    {/* Dynamic category routes */}
+                    <Route path="/category/:category" element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <CategoryPage />
+                      </Suspense>
+                    } />
+                    
+                    {/* Legacy category routes for backward compatibility */}
+                    <Route path="/world" element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <CategoryPage />
+                      </Suspense>
+                    } />
+                    <Route path="/dominica" element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <CategoryPage />
+                      </Suspense>
+                    } />
+                    <Route path="/economy" element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <CategoryPage />
+                      </Suspense>
+                    } />
+                    <Route path="/agriculture" element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <CategoryPage />
+                      </Suspense>
+                    } />
+                    
+                    {/* Contact page */}
+                    <Route path="/contact" element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <ContactPage />
+                      </Suspense>
+                    } />
+                    
+                    {/* Static pages */}
+                    <Route path="/about" element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <StaticPageDisplay />
+                      </Suspense>
+                    } />
+                    <Route path="/privacy" element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <StaticPageDisplay />
+                      </Suspense>
+                    } />
+                    <Route path="/terms" element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <StaticPageDisplay />
+                      </Suspense>
+                    } />
+                    <Route path="/editorial-team" element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <StaticPageDisplay />
+                      </Suspense>
+                    } />
+                    
+                    {/* Dynamic static page route */}
+                    <Route path="/pages/:slug" element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <StaticPageDisplay />
+                      </Suspense>
+                    } />
+                    
+                    {/* Admin routes */}
+                    <Route
+                      path="/admin"
+                      element={
+                        <ProtectedRoute requireAdmin>
+                          <Suspense fallback={<LoadingSpinner />}>
+                            <AdminLayout />
+                          </Suspense>
+                        </ProtectedRoute>
+                      }
+                    >
+                      <Route index element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <AdminDashboard />
+                        </Suspense>
+                      } />
+                      <Route path="articles" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <AdminArticles />
+                        </Suspense>
+                      } />
+                      <Route path="articles/new" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <AdminArticleEditor />
+                        </Suspense>
+                      } />
+                      <Route path="articles/:id/edit" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <AdminArticleEditor />
+                        </Suspense>
+                      } />
+                      <Route path="categories" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <AdminCategories />
+                        </Suspense>
+                      } />
+                      <Route path="authors" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <AdminAuthors />
+                        </Suspense>
+                      } />
+                      <Route path="pages" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <AdminStaticPages />
+                        </Suspense>
+                      } />
+                      <Route path="breaking-news" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <AdminBreakingNews />
+                        </Suspense>
+                      } />
+                      <Route path="images" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <AdminImages />
+                        </Suspense>
+                      } />
+                      <Route path="settings" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <AdminSettings />
+                        </Suspense>
+                      } />
+                      <Route path="users" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <AdminUsers />
+                        </Suspense>
+                      } />
+                      <Route path="profile" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <UserProfile />
+                        </Suspense>
+                      } />
+                    </Route>
+                    
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </MaintenanceWrapper>
             </TooltipProvider>
           </AuthProvider>
         </QueryClientProvider>
-        <PerformanceDashboard />
       </HelmetProvider>
     </ErrorBoundary>
   );

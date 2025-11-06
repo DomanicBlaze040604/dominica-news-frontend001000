@@ -1,48 +1,50 @@
 import React from 'react';
-import { useMaintenanceMode } from '../hooks/useMaintenanceMode';
-import { MaintenancePage } from './MaintenancePage';
-import { useAuth } from '../hooks/useAuth';
+import { AlertTriangle, Clock } from 'lucide-react';
 
 interface MaintenanceWrapperProps {
   children: React.ReactNode;
 }
 
-/**
- * Wrapper component that checks for maintenance mode and shows maintenance page
- * Allows admin users to bypass maintenance mode
- */
 export const MaintenanceWrapper: React.FC<MaintenanceWrapperProps> = ({ children }) => {
-  const { data: maintenanceData, isLoading, refetch } = useMaintenanceMode();
-  const { user } = useAuth();
+  // Check if maintenance mode is enabled
+  const isMaintenanceMode = false; // TODO: Connect to your backend settings
 
-  // Show loading state while checking maintenance mode
-  if (isLoading) {
+  if (isMaintenanceMode) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="h-8 w-8 text-yellow-600" />
+            </div>
+            
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Under Maintenance
+            </h1>
+            
+            <p className="text-gray-600 mb-6">
+              We're currently performing scheduled maintenance to improve your experience. 
+              We'll be back shortly!
+            </p>
+
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <Clock className="h-4 w-4" />
+              <span>Expected downtime: 30 minutes</span>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <p className="text-sm text-gray-500">
+                For urgent matters, please contact us at{' '}
+                <a href="mailto:admin@dominica-news.com" className="text-green-600 hover:underline">
+                  admin@dominica-news.com
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // Check if site is in maintenance mode
-  const isMaintenanceMode = maintenanceData?.data?.maintenanceMode;
-  const isAdmin = user?.role === 'admin';
-
-  // Show maintenance page if in maintenance mode and user is not admin
-  if (isMaintenanceMode && !isAdmin) {
-    return (
-      <MaintenancePage
-        title="Site Under Maintenance"
-        message="We are currently performing scheduled maintenance to improve your experience. Please check back soon."
-        estimatedTime="We expect to be back online shortly."
-        contactEmail="support@dominicanews.com"
-        onRetry={() => refetch()}
-      />
-    );
-  }
-
-  // Render normal app
   return <>{children}</>;
 };
-
-export default MaintenanceWrapper;

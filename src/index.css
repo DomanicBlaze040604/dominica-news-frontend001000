@@ -2,219 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .line-clamp-1 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
-  }
-  
-  .line-clamp-2 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-  }
-  
-  .line-clamp-3 {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-  }
-
-  /* Navigation dropdown animations */
-  .animate-in {
-    animation: fadeIn 0.2s ease-out;
-  }
-
-  .slide-in-from-top-2 {
-    animation: slideInFromTop 0.2s ease-out;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideInFromTop {
-    from {
-      opacity: 0;
-      transform: translateY(-8px) translateX(-50%);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) translateX(-50%);
-    }
-  }
-
-  .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
-  }
-
-  .animate-slide-in-left {
-    animation: slideInLeft 0.3s ease-out;
-  }
-
-  @keyframes slideInLeft {
-    from {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-}
-
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Dominica News Design System - Inspired by Dominica flag colors */
 
 @layer base {
   :root {
-    /* Dominica News - Professional color scheme inspired by the flag */
-    --background: 0 0% 98%;
-    --foreground: 150 15% 15%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 150 15% 15%;
+    --card-foreground: 0 0% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 150 15% 15%;
+    --popover-foreground: 0 0% 10%;
 
-    /* Deep green - primary color from Dominica flag */
-    --primary: 150 50% 28%;
+    /* Dominica flag colors */
+    --primary: 156 100% 21%; /* Dominica green #006B3F */
     --primary-foreground: 0 0% 100%;
 
-    /* Light green background for secondary elements */
-    --secondary: 150 30% 95%;
-    --secondary-foreground: 150 50% 28%;
+    --secondary: 48 100% 50%; /* Dominica yellow #FFCC00 */
+    --secondary-foreground: 0 0% 10%;
 
-    /* Muted backgrounds */
-    --muted: 150 10% 96%;
-    --muted-foreground: 150 8% 45%;
+    --accent: 350 82% 51%; /* Dominica red #D21034 */
+    --accent-foreground: 0 0% 100%;
 
-    /* Yellow accent from flag */
-    --accent: 45 95% 50%;
-    --accent-foreground: 150 50% 15%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Red for important actions/highlights */
-    --destructive: 0 75% 45%;
+    --destructive: 350 82% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 150 15% 88%;
-    --input: 150 15% 92%;
-    --ring: 150 50% 28%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 156 100% 21%;
 
     --radius: 0.5rem;
 
     /* Custom design tokens */
-    --header-bg: 0 0% 100%;
-    --news-hover: 150 50% 96%;
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
-
-    /* Typography System - Mobile First (Default) */
-    --font-size-h1: 2rem;      /* 32px */
-    --font-size-h2: 1.75rem;   /* 28px */
-    --font-size-h3: 1.5rem;    /* 24px */
-    --font-size-h4: 1.25rem;   /* 20px */
-    --font-size-h5: 1.125rem;  /* 18px */
-    --font-size-h6: 1rem;      /* 16px */
-    --font-size-body: 0.875rem;     /* 14px */
-    --font-size-body-large: 1rem;    /* 16px */
-    --font-size-body-small: 0.75rem; /* 12px */
-    --font-size-caption: 0.75rem;    /* 12px */
-
-    /* Font Families with optimized fallbacks to prevent layout shift */
-    --font-family-primary: 'Roboto', 'Helvetica Neue', 'Arial', system-ui, sans-serif;
-    --font-family-heading: 'Montserrat', 'Helvetica Neue', 'Arial', system-ui, sans-serif;
-
-    /* Font Weights */
-    --font-weight-light: 300;
-    --font-weight-regular: 400;
-    --font-weight-medium: 500;
-    --font-weight-semibold: 600;
-    --font-weight-bold: 700;
-    --font-weight-black: 800;
-
-    /* Line Heights */
-    --line-height-tight: 1.2;
-    --line-height-normal: 1.4;
-    --line-height-relaxed: 1.6;
-    --line-height-loose: 1.8;
-  }
-
-  /* Tablet Typography Scale */
-  @media (min-width: 768px) {
-    :root {
-      --font-size-h1: 2.5rem;    /* 40px */
-      --font-size-h2: 2rem;      /* 32px */
-      --font-size-h3: 1.75rem;   /* 28px */
-      --font-size-h4: 1.5rem;    /* 24px */
-      --font-size-h5: 1.25rem;   /* 20px */
-      --font-size-h6: 1.125rem;  /* 18px */
-      --font-size-body: 1rem;         /* 16px */
-      --font-size-body-large: 1.125rem; /* 18px */
-      --font-size-body-small: 0.875rem; /* 14px */
-      --font-size-caption: 0.875rem;    /* 14px */
-    }
-  }
-
-  /* Desktop Typography Scale */
-  @media (min-width: 1024px) {
-    :root {
-      --font-size-h1: 3rem;      /* 48px */
-      --font-size-h2: 2.5rem;    /* 40px */
-      --font-size-h3: 2rem;      /* 32px */
-      --font-size-h4: 1.75rem;   /* 28px */
-      --font-size-h5: 1.5rem;    /* 24px */
-      --font-size-h6: 1.25rem;   /* 20px */
-      --font-size-body: 1rem;         /* 16px */
-      --font-size-body-large: 1.125rem; /* 18px */
-      --font-size-body-small: 0.875rem; /* 14px */
-      --font-size-caption: 0.875rem;    /* 14px */
-    }
+    --header-height: 80px;
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    --background: 150 25% 8%;
-    --foreground: 150 10% 95%;
+    --background: 0 0% 10%;
+    --foreground: 0 0% 98%;
 
-    --card: 150 20% 12%;
-    --card-foreground: 150 10% 95%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 150 20% 12%;
-    --popover-foreground: 150 10% 95%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 150 45% 45%;
+    --primary: 156 100% 21%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 150 20% 18%;
-    --secondary-foreground: 150 10% 95%;
+    --secondary: 48 100% 50%;
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 150 15% 20%;
-    --muted-foreground: 150 8% 65%;
+    --accent: 350 82% 51%;
+    --accent-foreground: 0 0% 100%;
 
-    --accent: 45 90% 55%;
-    --accent-foreground: 150 25% 8%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 65%;
 
-    --destructive: 0 70% 50%;
+    --destructive: 350 82% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 150 15% 25%;
-    --input: 150 15% 25%;
-    --ring: 150 45% 45%;
-
-    --header-bg: 150 20% 12%;
-    --news-hover: 150 20% 15%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 156 100% 30%;
   }
 }
 
@@ -225,307 +80,147 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-family-primary);
-    font-size: var(--font-size-body);
-    line-height: var(--line-height-normal);
-    font-weight: var(--font-weight-regular);
-    font-feature-settings: "kern" 1, "liga" 1;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    /* Prevent font loading layout shift */
-    font-display: swap;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* Font loading states to prevent layout shift */
-  .font-loading {
-    visibility: hidden;
-  }
-
-  .font-loaded {
-    visibility: visible;
-  }
-
-  /* Ensure consistent sizing during font loading */
-  .font-fallback {
-    font-family: 'Helvetica Neue', 'Arial', system-ui, sans-serif;
-  }
-
-  /* Enhanced typography hierarchy using CSS custom properties */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-family-heading);
-    font-feature-settings: "kern" 1, "liga" 1;
-    text-rendering: optimizeLegibility;
-    line-height: var(--line-height-tight);
-    font-weight: var(--font-weight-bold);
-    margin-bottom: 0.5em;
-  }
-
-  h1 {
-    font-size: var(--font-size-h1);
-    font-weight: var(--font-weight-black);
-    letter-spacing: -0.025em;
-  }
-
-  h2 {
-    font-size: var(--font-size-h2);
-    font-weight: var(--font-weight-black);
-    letter-spacing: -0.02em;
-  }
-
-  h3 {
-    font-size: var(--font-size-h3);
-    font-weight: var(--font-weight-bold);
-    letter-spacing: -0.015em;
-  }
-
-  h4 {
-    font-size: var(--font-size-h4);
-    font-weight: var(--font-weight-bold);
-    letter-spacing: -0.01em;
-  }
-
-  h5 {
-    font-size: var(--font-size-h5);
-    font-weight: var(--font-weight-semibold);
-  }
-
-  h6 {
-    font-size: var(--font-size-h6);
-    font-weight: var(--font-weight-semibold);
-  }
-
-  /* Enhanced paragraph and text styling */
-  p {
-    font-family: var(--font-family-primary);
-    font-size: var(--font-size-body);
-    line-height: var(--line-height-relaxed);
-    font-weight: var(--font-weight-regular);
-    font-feature-settings: "kern" 1, "liga" 1;
-    margin-bottom: 1em;
-  }
-
-  /* Article content typography */
-  .article-title {
-    font-family: var(--font-family-heading);
-    font-weight: var(--font-weight-black);
-    font-size: var(--font-size-h2);
-    line-height: var(--line-height-tight);
-    letter-spacing: -0.02em;
-  }
-
-  .article-subtitle {
-    font-family: var(--font-family-heading);
-    font-weight: var(--font-weight-bold);
-    font-size: var(--font-size-h4);
-    line-height: var(--line-height-tight);
-    letter-spacing: -0.015em;
-  }
-
-  .article-excerpt {
-    font-family: var(--font-family-primary);
-    font-size: var(--font-size-body-large);
-    line-height: var(--line-height-relaxed);
-    font-weight: var(--font-weight-regular);
-    @apply text-muted-foreground;
-  }
-
-  /* Author and metadata typography */
-  .author-name {
-    font-family: var(--font-family-primary);
-    font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-body);
-    letter-spacing: 0.01em;
-  }
-
-  .author-role {
-    font-family: var(--font-family-primary);
-    font-weight: var(--font-weight-light);
-    font-size: var(--font-size-body-small);
-    letter-spacing: 0.02em;
-    @apply text-muted-foreground;
-  }
-
-  .article-meta {
-    font-family: var(--font-family-primary);
-    font-size: var(--font-size-body-small);
-    font-weight: var(--font-weight-medium);
-    letter-spacing: 0.015em;
-  }
-
-  /* Utility classes for consistent typography */
-  .text-body-large {
-    font-size: var(--font-size-body-large);
-    line-height: var(--line-height-normal);
-  }
-
-  .text-body-small {
-    font-size: var(--font-size-body-small);
-    line-height: var(--line-height-normal);
-  }
-
-  .text-caption {
-    font-size: var(--font-size-caption);
-    line-height: var(--line-height-normal);
-  }
-}
-/* Breaking News Ticker Styles */
-.breaking-news-ticker + * {
-  margin-top: 48px; /* Default height for breaking news ticker */
-}
-
-@media (max-width: 768px) {
-  .breaking-news-ticker + * {
-    margin-top: 44px;
+    @apply font-display;
   }
 }
 
-@media (max-width: 480px) {
-  .breaking-news-ticker + * {
-    margin-top: 40px;
-  }
-}/* Brea
-king News Ticker Component Styles */
-.breaking-news-ticker {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  animation: slideDown 0.3s ease-out;
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }
 
-.breaking-news-container {
-  display: flex;
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 8px 16px;
-  min-height: 48px;
-}
-
-.breaking-news-label {
-  flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 4px 12px;
-  border-radius: 4px;
-  margin-right: 16px;
-  font-weight: bold;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-}
-
-.breaking-text {
-  animation: pulse 2s infinite;
-}
-
-.breaking-news-content {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-  height: 32px;
-  display: flex;
-  align-items: center;
-}
-
-.breaking-news-text {
-  white-space: nowrap;
-  animation: scroll 20s linear infinite;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.breaking-news-dismiss {
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  margin-left: 16px;
-  transition: background-color 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.breaking-news-dismiss:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-@keyframes slideDown {
-  from {
-    transform: translateY(-100%);
+/* Article prose styles */
+@layer components {
+  .prose {
+    @apply text-foreground;
   }
-  to {
-    transform: translateY(0);
+  
+  /* Hover effects and transitions */
+  .section-fade-in {
+    @apply opacity-0 translate-y-4 transition-all duration-700 ease-out;
   }
-}
-
-@keyframes scroll {
-  0% {
-    transform: translateX(100%);
+  
+  .section-fade-in.visible {
+    @apply opacity-100 translate-y-0;
   }
-  100% {
-    transform: translateX(-100%);
+  
+  .hover-lift {
+    @apply transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl;
   }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+  
+  .hover-scale {
+    @apply transition-transform duration-300 ease-out hover:scale-105;
   }
-  50% {
-    opacity: 0.7;
+  
+  .interactive-card {
+    @apply transition-all duration-300 ease-out hover:shadow-2xl hover:border-primary/50;
   }
-}
-
-/* Responsive design for breaking news */
-@media (max-width: 768px) {
-  .breaking-news-container {
-    padding: 6px 12px;
-    min-height: 44px;
+  
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-background/80 backdrop-blur-md;
   }
-
-  .breaking-news-label {
-    margin-right: 12px;
-    padding: 3px 8px;
-    font-size: 11px;
+  
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
+  }
+  
+  /* Shimmer effect */
+  .shimmer {
+    @apply animate-pulse bg-gradient-to-r from-muted via-muted-foreground/20 to-muted;
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
+  }
+  
+  /* Smooth reveal */
+  .reveal {
+    @apply opacity-0 translate-y-8;
+    animation: reveal 0.6s ease-out forwards;
+  }
+  
+  @keyframes reveal {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+  
+  /* Floating animation */
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  /* Pulse glow */
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(var(--primary), 0.3);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(var(--primary), 0.6);
+    }
   }
 
-  .breaking-news-text {
-    font-size: 13px;
-    animation: scroll 15s linear infinite;
+  /* Prose styles */
+  .prose h2 {
+    @apply font-display text-2xl font-bold mt-8 mb-4;
   }
 
-  .breaking-news-dismiss {
-    margin-left: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .breaking-news-container {
-    padding: 4px 8px;
-    min-height: 40px;
+  .prose h3 {
+    @apply font-display text-xl font-bold mt-6 mb-3;
   }
 
-  .breaking-news-label {
-    margin-right: 8px;
-    padding: 2px 6px;
-    font-size: 10px;
+  .prose p {
+    @apply mb-4 leading-relaxed;
   }
 
-  .breaking-news-text {
-    font-size: 12px;
-    animation: scroll 12s linear infinite;
+  .prose ul {
+    @apply list-disc pl-6 mb-4 space-y-2;
   }
 
-  .breaking-news-dismiss {
-    margin-left: 8px;
+  .prose ol {
+    @apply list-decimal pl-6 mb-4 space-y-2;
+  }
+
+  .prose li {
+    @apply leading-relaxed;
+  }
+
+  .prose a {
+    @apply text-primary hover:underline;
+  }
+
+  .prose strong {
+    @apply font-semibold;
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-primary pl-4 italic my-4;
   }
 }

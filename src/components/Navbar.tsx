@@ -1,249 +1,247 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Menu, User, LogOut, Settings, Search, X } from "lucide-react";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { useAuth } from "../hooks/useAuth";
-import { categoriesService } from "../services/categories";
-import { CategoryDropdown } from "./CategoryDropdown";
-import { NavigationSkeleton } from "./ui/LoadingSkeleton";
-import { NavigationErrorBoundary } from "./ErrorBoundaries";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, Search, User, LogOut, Settings, Bell } from 'lucide-react';
+import { CategoryDropdown } from './CategoryDropdown';
+import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 
-const Navbar = () => {
+export const Navbar: React.FC = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { user, logout } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const { isAuthenticated, user, logout, isAdmin } = useAuth();
 
-  // Fetch categories for navigation
-  const { data: categoriesData } = useQuery({
-    queryKey: ['categories'],
-    queryFn: categoriesService.getCategories,
-  });
+  // Handle scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
 
-  const categories = categoriesData?.data.categories || [];
-  
-  // Create navigation items with Home + categories
-  const navItems = [
-    { label: "Home", path: "/" },
-    ...categories.filter(category => category?.name).map(category => ({
-      label: category.name,
-      path: `/category/${category.slug}`,
-    })),
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location]);
+
+  const navLinks = [
+    { name: 'Home', href: '/', exact: true },
+    { name: 'About', href: '/about' },
+    { name: 'Contact', href: '/contact' },
   ];
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // For now, redirect to home with search query
-      // In a real implementation, you'd have a search results page
-      navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-      setSearchOpen(false);
+  const isActiveLink = (href: string, exact = false) => {
+    if (exact) {
+      return location.pathname === href;
+    }
+    return location.pathname.startsWith(href);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
     }
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm backdrop-blur-sm">
-      {/* Top bar with logo and auth buttons */}
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Mobile menu button */}
-          <button
-            className="lg:hidden p-2 hover:bg-muted rounded-md transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-
+    <nav
+      className={cn(
+        "sticky top-0 z-50 transition-all duration-300",
+        isScrolled
+          ? "bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200"
+          : "bg-white shadow-sm"
+      )}
+      role="navigation"
+      aria-label="Main navigation"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex-1 lg:flex-none text-center lg:text-left group">
-            <h1 className="font-headline font-black text-primary tracking-wide transition-all group-hover:scale-105" 
-                style={{ fontSize: 'var(--font-size-h2)' }}>
-              DOMINICA NEWS
-            </h1>
+          <Link
+            to="/"
+            className={cn(
+              "flex items-center gap-3 font-bold text-xl transition-all duration-200",
+              "hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 rounded-lg p-1"
+            )}
+          >
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-lg">DN</span>
+              </div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+            </div>
+            <span className="hidden sm:block text-gray-800">
+              Dominica <span className="text-green-600">News</span>
+            </span>
           </Link>
 
-          {/* Search and Auth section */}
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.href}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                  "hover:bg-green-50 hover:text-green-600 hover:scale-105",
+                  "focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2",
+                  isActiveLink(link.href, link.exact)
+                    ? "text-green-600 bg-green-50"
+                    : "text-gray-700"
+                )}
+              >
+                {link.name}
+              </Link>
+            ))}
+            
+            {/* Categories Dropdown */}
+            <CategoryDropdown />
+          </div>
+
+          {/* Right Side Actions */}
           <div className="flex items-center gap-2">
             {/* Search Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2"
+            <button
+              className={cn(
+                "p-2 rounded-lg transition-all duration-200",
+                "text-gray-600 hover:text-green-600 hover:bg-green-50 hover:scale-110",
+                "focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              )}
+              aria-label="Search"
             >
-              <Search className="h-4 w-4" />
-            </Button>
-            {isAuthenticated ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    <span className="hidden sm:inline">{user?.fullName}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">{user?.fullName}</p>
-                      <p className="text-xs text-muted-foreground">{user?.email}</p>
-                      {isAdmin && (
-                        <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
-                          Admin
-                        </span>
-                      )}
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {isAdmin && (
-                    <>
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin" className="flex items-center gap-2">
-                          <Settings className="h-4 w-4" />
-                          Admin Panel
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </>
+              <Search className="h-5 w-5" />
+            </button>
+
+            {/* User Menu */}
+            {user ? (
+              <div className="relative group">
+                <button
+                  className={cn(
+                    "flex items-center gap-2 p-2 rounded-lg transition-all duration-200",
+                    "text-gray-700 hover:text-green-600 hover:bg-green-50",
+                    "focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                   )}
-                  <DropdownMenuItem
-                    onClick={() => logout()}
-                    className="flex items-center gap-2 text-red-600"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                >
+                  <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      {user.fullName?.charAt(0) || user.email.charAt(0)}
+                    </span>
+                  </div>
+                  <span className="hidden sm:block text-sm font-medium">
+                    {user.fullName || user.email}
+                  </span>
+                </button>
+
+                {/* User Dropdown */}
+                <div className={cn(
+                  "absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200",
+                  "opacity-0 invisible group-hover:opacity-100 group-hover:visible",
+                  "transition-all duration-200 transform translate-y-2 group-hover:translate-y-0",
+                  "z-50"
+                )}>
+                  <div className="p-2">
+                    {user.role === 'admin' && (
+                      <Link
+                        to="/admin"
+                        className={cn(
+                          "flex items-center gap-3 w-full p-3 rounded-lg text-left transition-all duration-200",
+                          "text-gray-700 hover:text-green-600 hover:bg-green-50 hover:scale-[1.02]"
+                        )}
+                      >
+                        <Settings className="h-4 w-4" />
+                        Admin Panel
+                      </Link>
+                    )}
+                    <Link
+                      to="/admin/profile"
+                      className={cn(
+                        "flex items-center gap-3 w-full p-3 rounded-lg text-left transition-all duration-200",
+                        "text-gray-700 hover:text-blue-600 hover:bg-blue-50 hover:scale-[1.02]"
+                      )}
+                    >
+                      <User className="h-4 w-4" />
+                      Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className={cn(
+                        "flex items-center gap-3 w-full p-3 rounded-lg text-left transition-all duration-200",
+                        "text-gray-700 hover:text-red-600 hover:bg-red-50 hover:scale-[1.02]"
+                      )}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              </div>
             ) : (
-              <>
-                <Button
-                  variant="default"
-                  size="sm"
-                  asChild
-                  className="bg-primary hover:bg-primary/90 transition-all hover:scale-105"
-                >
-                  <Link to="/auth">Register</Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="transition-all hover:scale-105"
-                >
-                  <Link to="/auth">Sign In</Link>
-                </Button>
-              </>
+              <Link
+                to="/auth"
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                  "text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
+                  "hover:scale-105 hover:shadow-lg",
+                  "focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                )}
+              >
+                <User className="h-4 w-4" />
+                <span className="hidden sm:block">Login</span>
+              </Link>
             )}
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className={cn(
+                "md:hidden p-2 rounded-lg transition-all duration-200",
+                "text-gray-600 hover:text-green-600 hover:bg-green-50",
+                "focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              )}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </div>
 
-        {/* Search Bar */}
-        {searchOpen && (
-          <div className="border-t bg-muted/50 p-4 animate-fade-in">
-            <form onSubmit={handleSearch} className="max-w-md mx-auto">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  type="text"
-                  placeholder="Search articles..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-10"
-                  autoFocus
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSearchOpen(false)}
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 p-1 h-6 w-6"
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className={cn(
+            "md:hidden border-t border-gray-200 py-4",
+            "animate-in slide-in-from-top-2 duration-200"
+          )}>
+            <div className="space-y-2">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className={cn(
+                    "block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
+                    "hover:bg-green-50 hover:text-green-600 hover:translate-x-2",
+                    isActiveLink(link.href, link.exact)
+                      ? "text-green-600 bg-green-50"
+                      : "text-gray-700"
+                  )}
                 >
-                  <X className="h-4 w-4" />
-                </Button>
+                  {link.name}
+                </Link>
+              ))}
+              
+              {/* Mobile Categories */}
+              <div className="px-4 py-2">
+                <CategoryDropdown className="w-full" />
               </div>
-            </form>
+            </div>
           </div>
         )}
-
-        {/* Navigation links - Desktop */}
-        <nav className="hidden lg:flex items-center justify-center gap-8 py-3 border-t">
-          {navItems.map((item, index) => (
-            item.label === "Home" ? (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "text-sm font-medium transition-all duration-300 relative",
-                  "hover:text-primary hover:scale-110",
-                  "animate-fade-in",
-                  location.pathname === item.path
-                    ? "text-primary border-b-2 border-primary pb-1"
-                    : "text-foreground/80"
-                )}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <div
-                key={item.path}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <CategoryDropdown
-                  categorySlug={item.path.replace('/category/', '')}
-                  categoryName={item.label}
-                  isActive={location.pathname === item.path}
-                />
-              </div>
-            )
-          ))}
-        </nav>
-
-        {/* Navigation links - Mobile */}
-        {mobileMenuOpen && (
-          <nav className="lg:hidden flex flex-col gap-2 py-4 border-t animate-slide-in-left">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className={cn(
-                  "px-4 py-2 rounded-md text-sm font-medium transition-all",
-                  location.pathname === item.path
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground/80 hover:bg-muted hover:translate-x-1"
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        )}
       </div>
-    </header>
+    </nav>
   );
 };
 
-// Wrap with error boundary for better error handling
-const NavbarWithErrorBoundary = () => (
-  <NavigationErrorBoundary>
-    <Navbar />
-  </NavigationErrorBoundary>
-);
-
-export default NavbarWithErrorBoundary;
+export default Navbar;
