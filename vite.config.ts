@@ -5,87 +5,118 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // ✅ Ensures correct asset paths in production (fixes 404 + blank page)
+  base: '/',
+
+  // ✅ Local dev server
   server: {
     host: "::",
     port: 3000,
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+
+  // ✅ Plugins (React + dev-only component tagger)
+  plugins: [
+    react(),
+    mode === "development" && componentTagger(),
+  ].filter(Boolean),
+
+  // ✅ Path alias for cleaner imports
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
+
+  // ✅ Production build configuration
   build: {
-    // Production build optimizations
-    target: 'esnext',
-    minify: 'esbuild',
-    sourcemap: mode === 'production' ? 'hidden' : true,
+    target: "esnext",
+    minify: "esbuild",
+    sourcemap: mode === "production" ? "hidden" : true,
+
+    // ✅ Cleans old dist before each build
+    outDir: "dist",
+    emptyOutDir: true,
+
+    // ✅ Rollup fine-tuning for optimal caching & splitting
     rollupOptions: {
       output: {
-        // Manual chunking for better caching
         manualChunks: {
-          // Vendor chunks
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
-          'query-vendor': ['@tanstack/react-query'],
-          'editor-vendor': ['@tiptap/react', '@tiptap/starter-kit', '@tiptap/extension-image'],
-          'utils-vendor': ['axios', 'date-fns', 'lucide-react'],
-          
-          // App chunks
-          'admin': [
-            './src/pages/admin/AdminDashboard.tsx',
-            './src/pages/admin/AdminArticles.tsx',
-            './src/pages/admin/AdminCategories.tsx',
-            './src/pages/admin/AdminSettings.tsx',
-            './src/pages/admin/AdminBreakingNews.tsx',
-            './src/pages/admin/AdminImages.tsx',
-            './src/pages/admin/AdminAuthors.tsx',
-            './src/pages/admin/AdminStaticPages.tsx'
-          ]
+          // Vendor libraries
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          "ui-vendor": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-select",
+          ],
+          "query-vendor": ["@tanstack/react-query"],
+          "editor-vendor": [
+            "@tiptap/react",
+            "@tiptap/starter-kit",
+            "@tiptap/extension-image",
+          ],
+          "utils-vendor": ["axios", "date-fns", "lucide-react"],
+
+          // Admin-related bundles
+          admin: [
+            "./src/pages/admin/AdminDashboard.tsx",
+            "./src/pages/admin/AdminArticles.tsx",
+            "./src/pages/admin/AdminCategories.tsx",
+            "./src/pages/admin/AdminSettings.tsx",
+            "./src/pages/admin/AdminBreakingNews.tsx",
+            "./src/pages/admin/AdminImages.tsx",
+            "./src/pages/admin/AdminAuthors.tsx",
+            "./src/pages/admin/AdminStaticPages.tsx",
+          ],
         },
-        // Asset naming for better caching
+
+        // ✅ File naming for caching & versioning
         chunkFileNames: (chunkInfo) => {
-          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop()?.replace('.tsx', '').replace('.ts', '') : 'chunk';
-          return `assets/${facadeModuleId}-[hash].js`;
+          const name =
+            chunkInfo.facadeModuleId
+              ?.split("/")
+              .pop()
+              ?.replace(/\.(tsx|ts)$/, "") || "chunk";
+          return `assets/${name}-[hash].js`;
         },
         assetFileNames: (assetInfo) => {
-          const info = assetInfo.name?.split('.') || [];
+          const info = assetInfo.name?.split(".") || [];
           const ext = info[info.length - 1];
-          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext || '')) {
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext || "")) {
             return `assets/images/[name]-[hash][extname]`;
           }
-          if (/css/i.test(ext || '')) {
+          if (/css/i.test(ext || "")) {
             return `assets/css/[name]-[hash][extname]`;
           }
           return `assets/[name]-[hash][extname]`;
-        }
-      }
+        },
+      },
     },
-    // Increase chunk size warning limit
-    chunkSizeWarningLimit: 1000,
-    // Enable CSS code splitting
+
+    // ✅ Other optimizations
     cssCodeSplit: true,
-    // Optimize dependencies
+    chunkSizeWarningLimit: 1000,
     commonjsOptions: {
       include: [/node_modules/],
-      transformMixedEsModules: true
-    }
+      transformMixedEsModules: true,
+    },
   },
-  // Environment variable handling
+
+  // ✅ Build-time environment metadata
   define: {
     __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
-    __VERSION__: JSON.stringify(process.env.npm_package_version || '1.0.0')
+    __VERSION__: JSON.stringify(process.env.npm_package_version || "1.0.0"),
   },
-  // Optimize dependencies
+
+  // ✅ Dependency optimization
   optimizeDeps: {
     include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      '@tanstack/react-query',
-      'axios',
-      'lucide-react'
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "@tanstack/react-query",
+      "axios",
+      "lucide-react",
     ],
-    exclude: ['@tiptap/react', '@tiptap/starter-kit']
-  }
+    exclude: ["@tiptap/react", "@tiptap/starter-kit"],
+  },
 }));
