@@ -1,0 +1,10 @@
+[33m65543a1[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m aaararerrerererreeugkygljbjn
+[33m774d2e2[m arararara
+[33mf41c4ec[m cors againnnn
+[33md210ee3[m cors once again
+[33m359491f[m Dramatically increase rate limits for better performance - Increased general API limits from 100 to 10,000 requests/minute - Increased main app limiter from 5,000 to 50,000 requests/minute - Increased auth limits from 50 to 500 requests per 15 minutes - Increased admin limits from 30 to 1,000 requests/minute - Added more endpoints to rate limit skip list - Updated environment variables for production deployment
+[33m6292a93[m Fix ES Module compatibility issue and optimize Docker build - Downgraded uuid to v9.0.1 for CommonJS compatibility - Updated Dockerfile to multi-stage build process - Fixed Railway deployment build failures - All ES module errors resolved, ready for deployment
+[33m460d95a[m OLT1
+[33m35ef9f3[m OLT
+[33mac06192[m ONE LAST TRY
+[33mf221c41[m please

@@ -1,0 +1,21 @@
+{
+  "name": "Dominica News",
+  "short_name": "DN News",
+  "description": "Your trusted source for news from Dominica and the Caribbean",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["news", "lifestyle", "entertainment"],
+  "lang": "en",
+  "dir": "ltr"
+}

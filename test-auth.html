@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authentication Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .result { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .loading { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>Authentication & Admin API Test</h1>
+    
+    <div>
+        <h3>Step 1: Login</h3>
+        <input type="email" id="email" placeholder="Email" value="admin@dominicanews.com">
+        <input type="password" id="password" placeholder="Password" value="Pass@12345">
+        <button onclick="testLogin()">Login</button>
+    </div>
+    
+    <div>
+        <h3>Step 2: Test Admin Endpoints</h3>
+        <button onclick="testAdminArticles()">Test Admin Articles</button>
+        <button onclick="testAdminCategories()">Test Admin Categories</button>
+    </div>
+    
+    <div>
+        <h3>Step 3: Check Token</h3>
+        <button onclick="checkToken()">Check Stored Token</button>
+        <button onclick="clearToken()">Clear Token</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'https://web-production-af44.up.railway.app/api';
+        let authToken = null;
+
+        function showResult(message, type = 'loading') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            showResult('🔐 Attempting login...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    authToken = data.data.token;
+                    localStorage.setItem('auth_token', authToken);
+                    
+                    showResult(`✅ Login successful!<br>
+                        <strong>User:</strong> ${data.data.user.fullName}<br>
+                        <strong>Role:</strong> ${data.data.user.role}<br>
+                        <strong>Token:</strong> ${authToken.substring(0, 20)}...`, 'success');
+                } else {
+                    showResult(`❌ Login failed: ${data.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAdminArticles() {
+            const token = authToken || localStorage.getItem('auth_token');
+            
+            if (!token) {
+                showResult('❌ No auth token found. Please login first.', 'error');
+                return;
+            }
+            
+            showResult('📰 Testing admin articles endpoint...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/articles`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showResult(`✅ Admin articles loaded!<br>
+                        <strong>Count:</strong> ${data.data.length}<br>
+                        <strong>Sample:</strong> ${data.data[0]?.title || 'No articles'}<br>
+                        <pre>${JSON.stringify(data, null, 2).substring(0, 300)}...</pre>`, 'success');
+                } else {
+                    showResult(`❌ Admin articles failed: ${data.message || response.statusText}<br>
+                        <strong>Status:</strong> ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Admin articles error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAdminCategories() {
+            const token = authToken || localStorage.getItem('auth_token');
+            
+            if (!token) {
+                showResult('❌ No auth token found. Please login first.', 'error');
+                return;
+            }
+            
+            showResult('📁 Testing admin categories endpoint...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/categories`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showResult(`✅ Admin categories loaded!<br>
+                        <strong>Count:</strong> ${data.data.length}<br>
+                        <strong>Sample:</strong> ${data.data[0]?.name || 'No categories'}<br>
+                        <pre>${JSON.stringify(data, null, 2).substring(0, 300)}...</pre>`, 'success');
+                } else {
+                    showResult(`❌ Admin categories failed: ${data.message || response.statusText}<br>
+                        <strong>Status:</strong> ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Admin categories error: ${error.message}`, 'error');
+            }
+        }
+
+        function checkToken() {
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                showResult(`✅ Token found in localStorage:<br>
+                    <strong>Token:</strong> ${token.substring(0, 50)}...<br>
+                    <strong>Length:</strong> ${token.length} characters`, 'success');
+            } else {
+                showResult('❌ No token found in localStorage', 'error');
+            }
+        }
+
+        function clearToken() {
+            localStorage.removeItem('auth_token');
+            authToken = null;
+            showResult('🗑️ Token cleared from localStorage', 'loading');
+        }
+
+        // Auto-check token on page load
+        window.onload = function() {
+            checkToken();
+        };
+    </script>
+</body>
+</html>
